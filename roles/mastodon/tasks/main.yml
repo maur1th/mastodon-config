@@ -1,0 +1,20 @@
+---
+- name: Create mastodon directory
+  file:
+    path: "{{mastodon_dir}}/"
+    state: directory
+- name: Clone mastodon repository
+  git:
+    repo: https://github.com/tootsuite/mastodon.git
+    dest: "{{mastodon_dir}}/repo"
+    version: "{{version}}"
+- name: Copy Mastodon configuration
+  template:
+    src: "{{item}}"
+    dest: "{{mastodon_dir}}/"
+    owner: 991
+    group: 991
+  with_items:
+    - docker-compose.yml
+    - .env.production
+...
