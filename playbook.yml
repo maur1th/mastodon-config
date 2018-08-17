@@ -1,0 +1,10 @@
+---
+- hosts: mastodon
+  roles:
+    - name: docker
+      version: "17.12"
+    - name: mastodon
+      domain: "{{inventory_hostname}}"
+    - name: certbot-ovh
+      domain: "{{inventory_hostname}}"
+...
