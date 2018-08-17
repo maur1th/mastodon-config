@@ -1,10 +1,23 @@
 ---
 - hosts: mastodon
+  vars:
+    domain: "{{inventory_hostname}}"
+    mastodon_dir: "{{ansible_env.HOME}}/mastodon"
+    network: mastodon
   roles:
     - name: docker
       version: "17.12"
+    - name: docker_network
+      networks:
+        - mastodon
+        - nginx
+    - name: postgres
+      volume: mastodon_db
+      version: "9.6-alpine"
+    - name: redis
+      volume: mastodon_redis
+      version: "4.0-alpine"
     - name: mastodon
-      domain: "{{inventory_hostname}}"
+      version: "v2.4.3"
     - name: certbot-ovh
-      domain: "{{inventory_hostname}}"
 ...

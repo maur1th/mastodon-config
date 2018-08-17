@@ -1,4 +1,8 @@
 ---
+##
+## Clone Mastodon repository
+##
+
 - name: Create mastodon directory
   file:
     path: "{{mastodon_dir}}/"
@@ -8,13 +12,98 @@
     repo: https://github.com/tootsuite/mastodon.git
     dest: "{{mastodon_dir}}/repo"
     version: "{{version}}"
-- name: Copy Mastodon configuration
-  template:
-    src: "{{item}}"
-    dest: "{{mastodon_dir}}/"
-    owner: 991
-    group: 991
-  with_items:
-    - docker-compose.yml
-    - .env.production
+
+##
+## Run Mastodon containers: web
+##
+
+- name: stop web container
+  docker_container:
+    name: mastodon-web
+    state: absent
+  ignore_errors: yes
+  register: container_stop
+  until: not container_stop.get("failed")
+  retries: 5
+  delay: 10
+- name: launch web container
+  docker_container:
+    name: mastodon-web
+    image: tootsuite/mastodon:{{version}}
+    pull: yes
+    state: started
+    restart_policy: unless-stopped
+    command: bash -c "rm -f /mastodon/tmp/pids/server.pid; bundle exec rails s -p 3000 -b '0.0.0.0'"
+    networks:
+      - name: "{{network}}"
+        aliases:
+          - web
+      - name: nginx
+        aliases:
+          - mastodon-web
+    volumes:
+      - "{{mastodon_dir}}/repo/public/system:/mastodon/public/system"
+    env: "{{env_vars}}"
+
+##
+## Run Mastodon containers: streaming
+##
+
+- name: stop streaming container
+  docker_container:
+    name: mastodon-streaming
+    state: absent
+  ignore_errors: yes
+  register: container_stop
+  until: not container_stop.get("failed")
+  retries: 5
+  delay: 10
+- name: launch streaming container
+  docker_container:
+    name: mastodon-streaming
+    image: tootsuite/mastodon:{{version}}
+    pull: yes
+    state: started
+    restart_policy: unless-stopped
+    command: yarn start
+    networks:
+      - name: "{{network}}"
+        aliases:
+          - streaming
+      - name: nginx
+        aliases:
+          - mastodon-streaming
+    env: "{{env_vars}}"
+
+##
+## Run Mastodon containers: sidekiq
+##
+
+- name: stop sidekiq container
+  docker_container:
+    name: mastodon-sidekiq
+    state: absent
+  ignore_errors: yes
+  register: container_stop
+  until: not container_stop.get("failed")
+  retries: 5
+  delay: 10
+- name: launch sidekiq container
+  docker_container:
+    name: mastodon-sidekiq
+    image: tootsuite/mastodon:{{version}}
+    pull: yes
+    state: started
+    restart_policy: unless-stopped
+    command: bundle exec sidekiq -q default -q mailers -q pull -q push
+    networks:
+      - name: "{{network}}"
+        aliases:
+          - sidekiq
+      - name: nginx
+        aliases:
+          - mastodon-sidekiq
+    volumes:
+      - "{{mastodon_dir}}/repo/public/system:/mastodon/public/system"
+    env: "{{env_vars}}"
 ...

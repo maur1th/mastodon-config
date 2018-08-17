@@ -3,4 +3,3 @@ mastodon.maurin.io
 
 [mastodon:vars]
 ansible_user=root
-version=v2.4.3
