@@ -1,17 +1,42 @@
 ---
 ##
+## Create Mastodon Docker volumes
+##
+
+- name: check if volumes exist
+  command: docker volume inspect {{item}}
+  register: result
+  ignore_errors: yes
+  changed_when: no
+  with_items:
+    - mastodon-assets
+    - mastodon-packs
+- name: create volumes
+  command: docker volume create {{item}}
+  when: result is failed
+  with_items:
+    - mastodon-assets
+    - mastodon-packs
+
+##
 ## Clone Mastodon repository
 ##
 
 - name: Create mastodon directory
   file:
-    path: "{{mastodon_dir}}/"
+    path: "{{mastodon_dir}}"
     state: directory
 - name: Clone mastodon repository
   git:
     repo: https://github.com/tootsuite/mastodon.git
-    dest: "{{mastodon_dir}}/repo"
+    dest: "{{mastodon_dir}}"
     version: "{{version}}"
+- name: Set appropriate owner:group on repository
+  file:
+    dest: "{{mastodon_dir}}"
+    owner: 991
+    group: 991
+    recurse: yes
 
 ##
 ## Run Mastodon containers: web
@@ -42,7 +67,9 @@
         aliases:
           - mastodon-web
     volumes:
-      - "{{mastodon_dir}}/repo/public/system:/mastodon/public/system"
+      - "{{mastodon_dir}}/public/system:/mastodon/public/system"
+      - "mastodon-assets:/mastodon/public/assets"
+      - "mastodon-packs:/mastodon/public/packs"
     env: "{{env_vars}}"
 
 ##
@@ -73,6 +100,9 @@
       - name: nginx
         aliases:
           - mastodon-streaming
+    volumes:
+      - "mastodon-assets:/mastodon/public/assets"
+      - "mastodon-packs:/mastodon/public/packs"
     env: "{{env_vars}}"
 
 ##
@@ -104,6 +134,8 @@
         aliases:
           - mastodon-sidekiq
     volumes:
-      - "{{mastodon_dir}}/repo/public/system:/mastodon/public/system"
+      - "{{mastodon_dir}}/public/system:/mastodon/public/system"
+      - "mastodon-assets:/mastodon/public/assets"
+      - "mastodon-packs:/mastodon/public/packs"
     env: "{{env_vars}}"
 ...
