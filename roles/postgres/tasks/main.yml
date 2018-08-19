@@ -30,6 +30,10 @@
       - name: "{{network}}"
         aliases:
           - db
+    env:
+      POSTGRES_DB: "{{pg_user}}"
+      POSTGRES_USER: "{{pg_user}}"
+      POSTGRES_PASSWORD: "{{pg_password}}"
     volumes:
       - "{{volume}}:/var/lib/postgresql/data"
 ...
