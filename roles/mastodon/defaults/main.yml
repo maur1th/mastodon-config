@@ -27,3 +27,4 @@ env_vars:
   SMTP_AUTH_METHOD: "{{smtp_auth_method}}"
   SMTP_OPENSSL_VERIFY_MODE: "{{smtp_openssl_verify_mode}}"
   SMTP_FROM_ADDRESS: "{{smtp_from_address}}"
+  WEB_CONCURRENCY: 1
