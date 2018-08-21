@@ -66,6 +66,9 @@
       - name: nginx
         aliases:
           - mastodon-web
+      - name: postgres
+        aliases:
+          - mastodon-web
     volumes:
       - "{{mastodon_dir}}/public/system:/mastodon/public/system"
       - "mastodon-assets:/mastodon/public/assets"
@@ -100,6 +103,9 @@
       - name: nginx
         aliases:
           - mastodon-streaming
+      - name: postgres
+        aliases:
+          - mastodon-streaming
     volumes:
       - "mastodon-assets:/mastodon/public/assets"
       - "mastodon-packs:/mastodon/public/packs"
@@ -131,6 +137,9 @@
         aliases:
           - sidekiq
       - name: nginx
+        aliases:
+          - mastodon-sidekiq
+      - name: postgres
         aliases:
           - mastodon-sidekiq
     volumes:
