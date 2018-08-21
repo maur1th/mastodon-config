@@ -1,5 +1,5 @@
 [mastodon]
-mastodon.maurin.io
+toot.maurin.io
 
 [mastodon:vars]
 ansible_user=root
